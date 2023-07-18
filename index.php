@@ -1,3 +1,4 @@
+<?php session_start()?>
 <?php include "datas/data.php"; ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -10,24 +11,133 @@
 
 <body>
 
-<form method="POST">
-    <label class="label1">Ajouter un film</label>
-    <input type="text" name="titre" placeholder="Titre">
-    <input class="date" type="date" name="date">    
-    <input type="number" name="duree" placeholder="Durée">
-    <input type="text" name="affiche" placeholder="Affiche">
-    <label class="label2">Réalisateur</label>
-    <input type="text" name="nom" placeholder="Nom">
-    <input type="text" name="prenom" placeholder="Prenom">
-    <label class="label2">Acteur</label>
-    <input type="text" name="nom_acteur" placeholder="Nom">
-    <input type="text" name="prenom_acteur" placeholder="Prenom">
+<header>
+        <div>
+            <h1>Panneau d'administration</h1>
+            <img class="troll" src="img\Sans titre.png" height="120px" width="160px">
+        </div>
+        <div class="all-btn">
+            <button class="btn"><a class="btn-text" href="index.php?page=acceuil">Acceuil</a></button>
+            <button class="btn"><a class="btn-text" href="index.php?page=ajouter/supprimer">Ajouter/supprimer un film</a></button>
+            <button class="btn"><a class="btn-text" href="index.php?page=parametres">Paramètres</a></button>
+            <?php
+                if (empty($_SESSION)) {
+                echo '<button class="btn"><a class="btn-text" href="index.php?page=connexion">Connexion</a></button>';
+                }
+                else {?>
+                    <form method="post">
+                        <input class="deco" type="submit" name="destroy" value="Déconnection">
+                        </form>
+                
+            <?php } 
+        
+            
+            ?>
+            
 
-    <input type="submit" name="submit" value="CREATE">
-    <br>
-    <input type="number" name="deleteId" placeholder="ID a supprimer">
-    <input type="submit" name="deleteSubmit" value="DELETE">
-</form>
+        </div>
+    </header>
+
+
+   
+    
+        <?php
+
+        if (empty($_SESSION)) {
+             echo  
+                '<form class="form1" action="index.php" method="post">
+            
+                <label class="all-form">Identifiant</label>
+                <input class="all-form" type="text" name="identifiant">
+                
+                <label class="all-form">Mot de passe</label>
+                <input class="all-form" type="password" name="password">
+                
+                <input class="log" type="submit" name="btn-user-pass" value="Se connecter">
+               
+                </form>';
+                
+        }
+        
+        if (isset($_POST['btn-user-pass'])){
+            if ($_POST['identifiant'] == 'Snoop' && ($_POST['password']) == '123'){
+            $_SESSION ['data'] = [ 'prenom' => "Snoop", 'nom' => 'Dog', 'age' => '30', 'role' => 'Rapeur']; ?>
+
+            <p class="connect">Vous êtes maintenant connecté</p>
+        <?php header("refresh:1; index.php?page=acceuil");
+        
+            }
+        else { ?>
+            <p class="connect-error">Mot de passe ou identifiant incorrect</p> 
+        <?php }
+    
+    
+        }
+
+        if (!empty($_SESSION)){
+
+            if (isset($_GET['page']) && $_GET['page'] == "acceuil"  ){ ?>
+                <div class="h3_container">
+                    <div class="h3_like">
+                        <h3>Bienvenue <?php echo $_SESSION['data']['prenom']; ?> <?php echo $_SESSION['data']['nom']; ?></h3>
+                    </div> 
+                </div>
+            
+            <?php 
+                $host = "localhost";
+                $dbname = "marvel";
+                $username = "root";
+                $password = ""; 
+
+                $dbConnect = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+
+                $sql = "SELECT * 
+                        FROM `film`
+                        ";
+                $stmt = $dbConnect->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->fetchAll(PDO::FETCH_ASSOC); ?>
+
+                    <section class="container">
+                        <div class="cards">
+                    <?php
+                    foreach ($result as $value) {
+                        echo '
+                        <div class="card">
+                            <img class="affiche" src=" ' . $value['affiche'] . ' ">
+                            <h3>' . $value['titre'] . '</h3>
+                            <p><strong>Date:</strong> ' . $value['date'] . '</p>
+                            <p><strong>Durée:</strong> ' . $value['duree'] . ' minutes</p>
+                            </div>';
+                }
+                
+            ?>
+                    
+                    
+           <?php     
+            }    
+
+            if (isset($_GET['page']) && $_GET['page'] == "ajouter/supprimer"  ){ ?>
+
+                <form method="POST">
+                    <label class="label1">Ajouter un film</label>
+                    <input class="input-ajout" type="text" name="titre" placeholder="Titre">
+                    <input class="input-ajout" type="date" name="date">    
+                    <input class="input-ajout" type="number" name="duree" placeholder="Durée">
+                    <input class="input-ajout" type="text" name="affiche" placeholder="Affiche">
+                    <label class="label2">Réalisateur</label>
+                    <input class="input-ajout" type="text" name="nom" placeholder="Nom">
+                    <input class="input-ajout" type="text" name="prenom" placeholder="Prenom">
+                    <label class="label2">Acteur</label>
+                    <input class="input-ajout" type="text" name="nom_acteur" placeholder="Nom">
+                    <input class="input-ajout" type="text" name="prenom_acteur" placeholder="Prenom">
+
+                    <input class="input-ajout" type="submit" name="submit" value="CREATE">
+                    <br>
+                    <label class="label1">Supprimer un film</label>
+                    <input class="input-ajout" type="number" name="deleteId" placeholder="ID a supprimer">
+                    <input class="input-ajout" type="submit" name="deleteSubmit" value="DELETE">
+                </form>
 
 <?php
 
@@ -83,11 +193,34 @@ if (isset($_POST['submit'])) {
         header("refresh: 1; http://localhost/projet-7-bdd/");
 }
 
+        $host = "localhost";
+        $dbname = "marvel";
+        $username = "root";
+        $password = ""; 
 
+        $dbConnect = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
 
+        $sql = "SELECT * FROM `film`";
+        $stmt = $dbConnect->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC); ?>
 
-
-
+            <section class="container">
+                <div class="cards">
+            <?php
+            foreach ($result as $value) {
+                echo '
+                <div class="card">
+                    <img class="affiche" src=" ' . $value['affiche'] . ' ">
+                    <h3>' . $value['titre'] . '</h3>
+                    <p><strong>Date:</strong> ' . $value['date'] . '</p>
+                    <p><strong>Durée:</strong> ' . $value['duree'] . ' minutes</p>
+                    </div>';
+        }
+        ?>
+                </div>
+            </section>
+            <?php
 // DELETE ID
 if (isset($_POST['deleteSubmit'])){
     $id = $_POST['deleteId'];
@@ -117,38 +250,98 @@ if (isset($_POST['deleteSubmit'])){
         echo "Veuillez entrer l'ID à supprimer.";
     }
     header("refresh: 1; http://localhost/projet-7-bdd/");
-}
 
-
-
+        }
+        
 
 
 ?>
 
+
+
+
+            
+        <?php
+                }
+            
+        
+            if (isset($_GET['page']) && $_GET['page'] == "parametres" && !empty($_SESSION)){?>
+
+                <form class="all-info" method="post">
+                    <h2 class="info">Modification de vos paramètres</h2>
+                    <label class="info" for="nom">Nom</label>
+                    <input class="info" type="text" name="nom" value="<?php echo $_SESSION['data']['nom']; ?>">
+                    <br>
+                    <label class="info" for="prenom">Prénom</label>
+                    <input class="info" type="text" name="prenom" value="<?php echo $_SESSION['data']['prenom']; ?>">
+                    <br>
+                    <label class="info" for="age">Age</label>
+                    <input class="info" type="number" name="age" value="<?php echo $_SESSION['data']['age']; ?>">
+                    <br>
+                    <label class="info" for="role">Rôle</label>
+                    <input class="info" type="text" name="role" value="<?php echo $_SESSION['data']['role']; ?>">
+                    <br>
+                    <input class="modification" type="submit" name="update" value="Modifier">
+                </form>
+            <?php }   
+        
+        }
+
+        if (isset($_POST['update'])){
+            if (empty($_POST['prenom']) || empty($_POST['nom']) || empty($_POST['age']) || empty($_POST['role'])){ ?>
+                <p class="connect-error">Toutes les informations ont besoin d'être renseigné</p>
+            <?php }
+            
+            if (!empty($_POST['prenom']) && !empty($_POST['nom']) && !empty($_POST['age']) && !empty($_POST['role'])) {
+                $_SESSION ['data']['prenom'] = $_POST['prenom'];
+                $_SESSION ['data']['nom'] = $_POST['nom'];
+                $_SESSION ['data']['age'] = $_POST['age'];
+                $_SESSION ['data']['role'] = $_POST['role'];
+                ?>
+                <p class="connect">Vos données ont bien été mis à jour</p>
+          <?php 
+               header("refresh:1; index.php?page=utilisateurs");}
+        }
+        ?>
+            
+        <?php 
+            if (isset($_POST['destroy'])) {
+                session_destroy();
+                echo '<p class="connect-error">Vous êtes déconnecter</p>';
+                header("refresh:1; index.php?page=acceuil");
+                }
+             ?>
+        
+              
+
+
+
+
+
     <section class="container">
         <!-- div parent display flex  -->
         <div class="cards">
-            <?php
+            <!-- <?php
                 foreach ($tab as $key) { ?>
                         <div class="card">
-                            <h2><?= $key["nom"]; ?></h2>
+                            <h2>$key["nom"];</h2>
                             <img class="affiche" src="<?= $key["img"]; ?>" alt="">
                             <p><b>Réalisateur : </b><?= $key["realisateur"]; ?></p>
                             <p><b>Date de sortie : </b><?= $key["date"]; ?></p>
                             <p><b>Durée : </b><?php echo ($key["duree"])/60; ?> heures</p>
                             <p><b>Genre : </b><?= $key["genre"]; ?></p>
                             <p><?= $key["synopsis"]; ?></p>
-                            <?php echo $key["bandeAnnonce"]; ?>
                     </div>
                 <?php }
 
-            ?>
+            ?> -->
+        </div>
+    </section>
 
 
+<!-- <?php
 
-<?php
-
-$sql = "SELECT * FROM `films`";
+$sql = "SELECT * FROM `film`";
     $stmt = $dbConnect->prepare($sql);
     $stmt->execute();
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -166,12 +359,11 @@ $sql = "SELECT * FROM `films`";
         </div>';
     }
 
-?>
+?> -->
 
             
             
             
-        </div>
-    </section>
+    
 </body>
 </html>
